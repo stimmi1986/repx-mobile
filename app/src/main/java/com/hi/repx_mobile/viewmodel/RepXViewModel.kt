@@ -12,7 +12,9 @@ import kotlinx.coroutines.launch
 class RepXViewModel(application: Application) : AndroidViewModel(application) {
     private val database = AppDatabase.getDatabase(application)
     private val repository = RepXRepository(
-        userDao = database.userDao()
+        userDao = database.userDao(),
+        exerciseDao = database.exerciseDao(),
+        workoutDao = database.workoutDao(),
     )
 
     // User state
@@ -32,9 +34,22 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    // Exercises
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
+    // Workouts
+    val workouts: StateFlow<List<Workout>> = _currentUserId.flatMapLatest { userId ->
+        if (userId != null) repository.getCompletedWorkouts(userId)
+        else flowOf(emptyList())
+    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
-    // ============ Auth Methods ============
+    val activeWorkout: StateFlow<Workout?> = _currentUserId.flatMapLatest { userId ->
+        if (userId != null) repository.getActiveWorkoutFlow(userId)
+        else flowOf(null)
+    }.stateIn(viewModelScope, SharingStarted.Lazily, null)
+
+    // Auth Methods
     fun register(email: String, password: String, displayName: String) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -98,4 +113,76 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
     fun clearAuthError() {
         _authError.value = null
     }
+
+    // Exercise Methods
+    fun updateSearchQuery(query: String) {
+        _searchQuery.value = query
+    }
+
+    suspend fun getExerciseById(exerciseId: Long): Exercise? {
+        return repository.getExerciseById(exerciseId)
+    }
+
+
+    // Workout Methods
+    fun startNewWorkout(title: String? = null, onStarted: (Long) -> Unit) {
+        viewModelScope.launch {
+            _currentUserId.value?.let { userId ->
+                val workoutId = repository.startWorkout(userId, title)
+                onStarted(workoutId)
+            }
+        }
+    }
+
+    suspend fun getWorkoutById(workoutId: Long): Workout? {
+        return repository.getWorkoutById(workoutId)
+    }
+
+    suspend fun getWorkoutExercisesList(workoutId: Long): List<WorkoutExercise> {
+        return repository.getWorkoutExercisesList(workoutId)
+    }
+
+    fun getWorkoutExercises(workoutId: Long): Flow<List<WorkoutExercise>> {
+        return repository.getWorkoutExercises(workoutId)
+    }
+
+    fun getWorkoutSets(workoutExerciseId: Long): Flow<List<WorkoutSet>> {
+        return repository.getWorkoutSets(workoutExerciseId)
+    }
+
+    fun copyWorkout(workoutId: Long, onCopied: (Long) -> Unit) {
+        viewModelScope.launch {
+            _currentUserId.value?.let { userId ->
+                val newWorkoutId = repository.copyWorkout(workoutId, userId)
+                if (newWorkoutId > 0) {
+                    onCopied(newWorkoutId)
+                }
+            }
+        }
+    }
+
+    fun addSetToExercise(workoutExerciseId: Long) {
+        viewModelScope.launch {
+            repository.addSetToExercise(workoutExerciseId)
+        }
+    }
+
+    fun updateSet(workoutSet: WorkoutSet) {
+        viewModelScope.launch {
+            repository.updateSet(workoutSet)
+        }
+    }
+
+    fun deleteSet(setId: Long) {
+        viewModelScope.launch {
+            repository.deleteSet(setId)
+        }
+    }
+
+    fun finishWorkout(workoutId: Long, notes: String? = null) {
+        viewModelScope.launch {
+            repository.finishWorkout(workoutId, notes)
+        }
+    }
+
 }
