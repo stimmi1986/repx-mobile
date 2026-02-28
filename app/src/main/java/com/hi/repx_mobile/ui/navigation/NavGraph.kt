@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 
+import com.hi.repx_mobile.ui.screens.ExerciseSearchScreen  // NEW: US4
 import com.hi.repx_mobile.ui.screens.HomeScreen
 import com.hi.repx_mobile.ui.screens.LoginScreen
 import com.hi.repx_mobile.ui.screens.ProfileScreen
@@ -44,6 +45,7 @@ fun NavGraph(
             )
         }
 
+        // Register screen
         composable(Screen.Register.route) {
             RegisterScreen(
                 viewModel = viewModel,
@@ -68,6 +70,7 @@ fun NavGraph(
             )
         }
 
+        // Workout
         composable(
             route = Screen.Workout.route,
             arguments = listOf(navArgument("workoutId") { type = NavType.LongType })
@@ -81,6 +84,7 @@ fun NavGraph(
             )
         }
 
+        // WorkoutHistory
         composable(Screen.WorkoutHistory.route) {
             WorkoutHistoryScreen(
                 viewModel = viewModel,
@@ -91,6 +95,7 @@ fun NavGraph(
             )
         }
 
+        // Workout Detail
         composable(
             route = Screen.WorkoutDetail.route,
             arguments = listOf(navArgument("workoutId") { type = NavType.LongType })
@@ -108,11 +113,21 @@ fun NavGraph(
             )
         }
 
-        // Exercise screens
+        // Exercise Search
+        composable(
+            route = Screen.ExerciseSearch.route,
+            arguments = listOf(navArgument("workoutId") { type = NavType.LongType })
+        ) { backStackEntry ->
+            val workoutId = backStackEntry.arguments?.getLong("workoutId") ?: return@composable
+            ExerciseSearchScreen(
+                workoutId = workoutId,
+                viewModel = viewModel,
+                onExerciseAdded = { navController.popBackStack() },
+                onBack = { navController.popBackStack() }
+            )
+        }
 
-        // Routine screens
-
-        // Progress screens
+        // Routine
 
         // Profile
         composable(Screen.Profile.route) {

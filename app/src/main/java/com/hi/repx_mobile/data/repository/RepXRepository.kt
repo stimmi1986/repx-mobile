@@ -9,7 +9,6 @@ class RepXRepository(
     private val userDao: UserDao,
     private val exerciseDao: ExerciseDao,
     private val workoutDao: WorkoutDao,
-
 ) {
     // User Operations
     suspend fun registerUser(email: String, password: String, displayName: String): Result<Long> {
@@ -86,6 +85,12 @@ class RepXRepository(
     }
 
     suspend fun deleteExercise(exercise: Exercise) = exerciseDao.delete(exercise)
+
+    suspend fun ensureDefaultExercises() {
+        if (exerciseDao.getDefaultExerciseCount() == 0) {
+            exerciseDao.insertAll(com.hi.repx_mobile.data.database.DefaultExercises.exercises)
+        }
+    }
 
     // Workout Operations
     fun getAllWorkouts(userId: Long): Flow<List<Workout>> = workoutDao.getAllWorkouts(userId)

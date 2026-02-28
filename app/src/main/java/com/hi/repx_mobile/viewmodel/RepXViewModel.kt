@@ -17,7 +17,7 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
         workoutDao = database.workoutDao(),
     )
 
-    // User state
+    // User State
     private val _currentUserId = MutableStateFlow<Long?>(null)
     val currentUserId: StateFlow<Long?> = _currentUserId.asStateFlow()
 
@@ -34,11 +34,30 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    // Exercises
+    // Exercise State
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
-    // Workouts
+    private val _selectedMuscle = MutableStateFlow<String?>(null)
+    val selectedMuscle: StateFlow<String?> = _selectedMuscle.asStateFlow()
+
+    val exercises: StateFlow<List<Exercise>> = combine(
+        _currentUserId,
+        _searchQuery,
+        _selectedMuscle
+    ) { userId, query, muscle ->
+        Triple(userId, query, muscle)
+    }.flatMapLatest { (userId, query, muscle) ->
+        if (userId == null) {
+            flowOf(emptyList())
+        } else when {
+            query.isNotBlank() -> repository.searchExercises(userId, query)
+            muscle != null -> repository.getExercisesByMuscle(userId, muscle)
+            else -> repository.getAllExercises(userId)
+        }
+    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+    // Workout State
     val workouts: StateFlow<List<Workout>> = _currentUserId.flatMapLatest { userId ->
         if (userId != null) repository.getCompletedWorkouts(userId)
         else flowOf(emptyList())
@@ -48,6 +67,13 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
         if (userId != null) repository.getActiveWorkoutFlow(userId)
         else flowOf(null)
     }.stateIn(viewModelScope, SharingStarted.Lazily, null)
+
+    // init allar default æfingar
+    init {
+        viewModelScope.launch {
+            repository.ensureDefaultExercises()
+        }
+    }
 
     // Auth Methods
     fun register(email: String, password: String, displayName: String) {
@@ -119,10 +145,20 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
         _searchQuery.value = query
     }
 
+    fun filterByMuscle(muscle: String?) {
+        _selectedMuscle.value = muscle
+    }
+
     suspend fun getExerciseById(exerciseId: Long): Exercise? {
         return repository.getExerciseById(exerciseId)
     }
 
+    fun addExerciseToWorkout(workoutId: Long, exerciseId: Long, onAdded: () -> Unit) {
+        viewModelScope.launch {
+            repository.addExerciseToWorkout(workoutId, exerciseId)
+            onAdded()
+        }
+    }
 
     // Workout Methods
     fun startNewWorkout(title: String? = null, onStarted: (Long) -> Unit) {
@@ -184,5 +220,4 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
             repository.finishWorkout(workoutId, notes)
         }
     }
-
 }
