@@ -175,6 +175,19 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
         }
     }
 
+    fun createCustomExercise(
+        name: String,
+        primaryMuscle: String,
+        equipment: String?,
+        description: String?
+    ) {
+        viewModelScope.launch {
+            _currentUserId.value?.let { userId ->
+                repository.createCustomExercise(userId, name, primaryMuscle, equipment, description)
+            }
+        }
+    }
+
     // Workout Methods
 
     fun startNewWorkout(title: String? = null, onStarted: (Long) -> Unit) {
