@@ -18,14 +18,17 @@ import kotlinx.coroutines.launch
         WorkoutExercise::class,
         WorkoutSet::class,
         Exercise::class,
+        Routine::class,
+        RoutineExercise::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun userDao(): UserDao
     abstract fun workoutDao(): WorkoutDao
     abstract fun exerciseDao(): ExerciseDao
+    abstract fun routineDao(): RoutineDao
 
     companion object {
         @Volatile

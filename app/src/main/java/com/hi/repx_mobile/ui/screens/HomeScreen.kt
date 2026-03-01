@@ -23,6 +23,7 @@ fun HomeScreen(
     viewModel: RepXViewModel,
     onStartWorkout: (Long) -> Unit,
     onNavigateToHistory: () -> Unit,
+    onNavigateToRoutines: () -> Unit,
     onNavigateToProfile: () -> Unit
 ) {
     val currentUser by viewModel.currentUser.collectAsState()
@@ -104,6 +105,13 @@ fun HomeScreen(
                         icon = Icons.Default.History,
                         title = "History",
                         onClick = onNavigateToHistory
+                    )
+                    QuickActionCard(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.List,
+                        title = "Routines",
+                        subtitle = "Start fast",
+                        onClick = onNavigateToRoutines
                     )
                 }
             }

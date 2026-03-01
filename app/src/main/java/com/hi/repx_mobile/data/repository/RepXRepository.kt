@@ -9,8 +9,10 @@ class RepXRepository(
     private val userDao: UserDao,
     private val exerciseDao: ExerciseDao,
     private val workoutDao: WorkoutDao,
+    private val routineDao: RoutineDao,
 ) {
     // User Operations
+
     suspend fun registerUser(email: String, password: String, displayName: String): Result<Long> {
         return try {
             val existingUser = userDao.getUserByEmail(email)
@@ -54,6 +56,7 @@ class RepXRepository(
     }
 
     // Exercise Operations
+
     fun getAllExercises(userId: Long): Flow<List<Exercise>> = exerciseDao.getAllExercises(userId)
 
     fun searchExercises(userId: Long, query: String): Flow<List<Exercise>> =
@@ -93,6 +96,7 @@ class RepXRepository(
     }
 
     // Workout Operations
+
     fun getAllWorkouts(userId: Long): Flow<List<Workout>> = workoutDao.getAllWorkouts(userId)
 
     fun getCompletedWorkouts(userId: Long): Flow<List<Workout>> = workoutDao.getCompletedWorkouts(userId)
@@ -202,5 +206,75 @@ class RepXRepository(
         }
 
         return newWorkoutId
+    }
+
+    // Routine Operations
+
+    fun getAllRoutines(userId: Long): Flow<List<Routine>> = routineDao.getAllRoutines(userId)
+
+    suspend fun getRoutineById(routineId: Long): Routine? = routineDao.getRoutineById(routineId)
+
+    fun getRoutineExercises(routineId: Long): Flow<List<RoutineExercise>> =
+        routineDao.getRoutineExercises(routineId)
+
+    suspend fun getRoutineExercisesList(routineId: Long): List<RoutineExercise> =
+        routineDao.getRoutineExercisesList(routineId)
+
+    suspend fun createRoutine(
+        userId: Long,
+        name: String,
+        description: String?,
+        exercises: List<Pair<Long, Triple<Int, Int?, Float?>>>
+    ): Long {
+        val routine = Routine(userId = userId, name = name, description = description)
+        val routineId = routineDao.insertRoutine(routine)
+
+        val routineExercises = exercises.mapIndexed { index, (exerciseId, defaults) ->
+            RoutineExercise(
+                routineId = routineId,
+                exerciseId = exerciseId,
+                orderIndex = index,
+                defaultSets = defaults.first,
+                defaultReps = defaults.second,
+                defaultWeight = defaults.third
+            )
+        }
+        routineDao.insertRoutineExercises(routineExercises)
+
+        return routineId
+    }
+
+    suspend fun deleteRoutine(routineId: Long) = routineDao.deleteRoutineById(routineId)
+
+    suspend fun startWorkoutFromRoutine(routineId: Long, userId: Long): Long {
+        val routine = routineDao.getRoutineById(routineId) ?: return -1
+        val routineExercises = routineDao.getRoutineExercisesList(routineId)
+
+        val workoutId = workoutDao.insertWorkout(
+            Workout(userId = userId, title = routine.name)
+        )
+
+        for (routineExercise in routineExercises) {
+            val workoutExerciseId = workoutDao.insertWorkoutExercise(
+                WorkoutExercise(
+                    workoutId = workoutId,
+                    exerciseId = routineExercise.exerciseId,
+                    orderIndex = routineExercise.orderIndex
+                )
+            )
+
+            for (setIndex in 0 until routineExercise.defaultSets) {
+                workoutDao.insertWorkoutSet(
+                    WorkoutSet(
+                        workoutExerciseId = workoutExerciseId,
+                        setIndex = setIndex,
+                        reps = routineExercise.defaultReps,
+                        weight = routineExercise.defaultWeight
+                    )
+                )
+            }
+        }
+
+        return workoutId
     }
 }

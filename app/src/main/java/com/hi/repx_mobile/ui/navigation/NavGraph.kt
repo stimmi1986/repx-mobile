@@ -10,11 +10,13 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 
-import com.hi.repx_mobile.ui.screens.ExerciseSearchScreen  // NEW: US4
+import com.hi.repx_mobile.ui.screens.CreateRoutineScreen
+import com.hi.repx_mobile.ui.screens.ExerciseSearchScreen
 import com.hi.repx_mobile.ui.screens.HomeScreen
 import com.hi.repx_mobile.ui.screens.LoginScreen
 import com.hi.repx_mobile.ui.screens.ProfileScreen
 import com.hi.repx_mobile.ui.screens.RegisterScreen
+import com.hi.repx_mobile.ui.screens.RoutineListScreen
 import com.hi.repx_mobile.ui.screens.WorkoutDetailScreen
 import com.hi.repx_mobile.ui.screens.WorkoutScreen
 
@@ -45,7 +47,6 @@ fun NavGraph(
             )
         }
 
-        // Register screen
         composable(Screen.Register.route) {
             RegisterScreen(
                 viewModel = viewModel,
@@ -66,11 +67,11 @@ fun NavGraph(
                     navController.navigate(Screen.Workout.createRoute(workoutId))
                 },
                 onNavigateToHistory = { navController.navigate(Screen.WorkoutHistory.route) },
+                onNavigateToRoutines = { navController.navigate(Screen.RoutineList.route) },
                 onNavigateToProfile = { navController.navigate(Screen.Profile.route) }
             )
         }
 
-        // Workout
         composable(
             route = Screen.Workout.route,
             arguments = listOf(navArgument("workoutId") { type = NavType.LongType })
@@ -84,7 +85,6 @@ fun NavGraph(
             )
         }
 
-        // WorkoutHistory
         composable(Screen.WorkoutHistory.route) {
             WorkoutHistoryScreen(
                 viewModel = viewModel,
@@ -95,7 +95,6 @@ fun NavGraph(
             )
         }
 
-        // Workout Detail
         composable(
             route = Screen.WorkoutDetail.route,
             arguments = listOf(navArgument("workoutId") { type = NavType.LongType })
@@ -113,7 +112,7 @@ fun NavGraph(
             )
         }
 
-        // Exercise Search
+        // Exercise search
         composable(
             route = Screen.ExerciseSearch.route,
             arguments = listOf(navArgument("workoutId") { type = NavType.LongType })
@@ -127,7 +126,27 @@ fun NavGraph(
             )
         }
 
-        // Routine
+        // Routine screens
+        composable(Screen.RoutineList.route) {
+            RoutineListScreen(
+                viewModel = viewModel,
+                onCreateRoutine = { navController.navigate(Screen.CreateRoutine.route) },
+                onStartWorkoutFromRoutine = { workoutId ->
+                    navController.navigate(Screen.Workout.createRoute(workoutId)) {
+                        popUpTo(Screen.Home.route)
+                    }
+                },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        composable(Screen.CreateRoutine.route) {
+            CreateRoutineScreen(
+                viewModel = viewModel,
+                onRoutineCreated = { navController.popBackStack() },
+                onBack = { navController.popBackStack() }
+            )
+        }
 
         // Profile
         composable(Screen.Profile.route) {

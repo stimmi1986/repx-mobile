@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.hi.repx_mobile.data.database.AppDatabase
 import com.hi.repx_mobile.data.database.entities.*
 import com.hi.repx_mobile.data.repository.RepXRepository
+import com.hi.repx_mobile.ui.screens.RoutineExerciseEntry
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
@@ -15,9 +16,11 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
         userDao = database.userDao(),
         exerciseDao = database.exerciseDao(),
         workoutDao = database.workoutDao(),
+        routineDao = database.routineDao(),
     )
 
     // User State
+
     private val _currentUserId = MutableStateFlow<Long?>(null)
     val currentUserId: StateFlow<Long?> = _currentUserId.asStateFlow()
 
@@ -35,6 +38,7 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
     // Exercise State
+
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
@@ -58,6 +62,7 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
     // Workout State
+
     val workouts: StateFlow<List<Workout>> = _currentUserId.flatMapLatest { userId ->
         if (userId != null) repository.getCompletedWorkouts(userId)
         else flowOf(emptyList())
@@ -68,7 +73,15 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
         else flowOf(null)
     }.stateIn(viewModelScope, SharingStarted.Lazily, null)
 
-    // init allar default æfingar
+    // Routine State
+
+    val routines: StateFlow<List<Routine>> = _currentUserId.flatMapLatest { userId ->
+        if (userId != null) repository.getAllRoutines(userId)
+        else flowOf(emptyList())
+    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+    // Init
+
     init {
         viewModelScope.launch {
             repository.ensureDefaultExercises()
@@ -76,6 +89,7 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // Auth Methods
+
     fun register(email: String, password: String, displayName: String) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -141,6 +155,7 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // Exercise Methods
+
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
     }
@@ -161,6 +176,7 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // Workout Methods
+
     fun startNewWorkout(title: String? = null, onStarted: (Long) -> Unit) {
         viewModelScope.launch {
             _currentUserId.value?.let { userId ->
@@ -218,6 +234,48 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
     fun finishWorkout(workoutId: Long, notes: String? = null) {
         viewModelScope.launch {
             repository.finishWorkout(workoutId, notes)
+        }
+    }
+
+    // Routine Methods
+
+    fun getRoutineExercises(routineId: Long): Flow<List<RoutineExercise>> {
+        return repository.getRoutineExercises(routineId)
+    }
+
+    fun createRoutine(
+        name: String,
+        description: String?,
+        exercises: List<RoutineExerciseEntry>
+    ) {
+        viewModelScope.launch {
+            _currentUserId.value?.let { userId ->
+                val exerciseData = exercises.map { entry ->
+                    entry.exercise.id to Triple(
+                        entry.defaultSets,
+                        entry.defaultReps,
+                        entry.defaultWeight
+                    )
+                }
+                repository.createRoutine(userId, name, description, exerciseData)
+            }
+        }
+    }
+
+    fun deleteRoutine(routineId: Long) {
+        viewModelScope.launch {
+            repository.deleteRoutine(routineId)
+        }
+    }
+
+    fun startWorkoutFromRoutine(routineId: Long, onStarted: (Long) -> Unit) {
+        viewModelScope.launch {
+            _currentUserId.value?.let { userId ->
+                val workoutId = repository.startWorkoutFromRoutine(routineId, userId)
+                if (workoutId > 0) {
+                    onStarted(workoutId)
+                }
+            }
         }
     }
 }
