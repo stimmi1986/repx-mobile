@@ -15,6 +15,7 @@ import com.hi.repx_mobile.ui.screens.ExerciseSearchScreen
 import com.hi.repx_mobile.ui.screens.HomeScreen
 import com.hi.repx_mobile.ui.screens.LoginScreen
 import com.hi.repx_mobile.ui.screens.ProfileScreen
+import com.hi.repx_mobile.ui.screens.ProgressPhotosScreen
 import com.hi.repx_mobile.ui.screens.RegisterScreen
 import com.hi.repx_mobile.ui.screens.RoutineListScreen
 import com.hi.repx_mobile.ui.screens.WorkoutDetailScreen
@@ -68,6 +69,7 @@ fun NavGraph(
                 },
                 onNavigateToHistory = { navController.navigate(Screen.WorkoutHistory.route) },
                 onNavigateToRoutines = { navController.navigate(Screen.RoutineList.route) },
+                onNavigateToPhotos = { navController.navigate(Screen.ProgressPhotos.route) },
                 onNavigateToProfile = { navController.navigate(Screen.Profile.route) }
             )
         }
@@ -144,6 +146,14 @@ fun NavGraph(
             CreateRoutineScreen(
                 viewModel = viewModel,
                 onRoutineCreated = { navController.popBackStack() },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // Progress Photos
+        composable(Screen.ProgressPhotos.route) {
+            ProgressPhotosScreen(
+                viewModel = viewModel,
                 onBack = { navController.popBackStack() }
             )
         }

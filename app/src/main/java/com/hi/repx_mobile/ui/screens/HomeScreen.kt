@@ -24,7 +24,8 @@ fun HomeScreen(
     onStartWorkout: (Long) -> Unit,
     onNavigateToHistory: () -> Unit,
     onNavigateToRoutines: () -> Unit,
-    onNavigateToProfile: () -> Unit
+    onNavigateToProfile: () -> Unit,
+    onNavigateToPhotos: () -> Unit
 ) {
     val currentUser by viewModel.currentUser.collectAsState()
     val activeWorkout by viewModel.activeWorkout.collectAsState()
@@ -112,6 +113,12 @@ fun HomeScreen(
                         title = "Routines",
                         subtitle = "Start fast",
                         onClick = onNavigateToRoutines
+                    )
+                    QuickActionCard(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.CameraAlt,
+                        title = "Photos",
+                        onClick = onNavigateToPhotos
                     )
                 }
             }

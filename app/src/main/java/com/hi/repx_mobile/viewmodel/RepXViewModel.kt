@@ -17,10 +17,10 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
         exerciseDao = database.exerciseDao(),
         workoutDao = database.workoutDao(),
         routineDao = database.routineDao(),
+        progressPhotoDao = database.progressPhotoDao()
     )
 
     // User State
-
     private val _currentUserId = MutableStateFlow<Long?>(null)
     val currentUserId: StateFlow<Long?> = _currentUserId.asStateFlow()
 
@@ -80,6 +80,11 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
         else flowOf(emptyList())
     }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
+    // Progress Photo State
+    val progressPhotos: StateFlow<List<ProgressPhoto>> = _currentUserId.flatMapLatest { userId ->
+        if (userId != null) repository.getAllProgressPhotos(userId) else flowOf(emptyList())
+    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
     // Init
 
     init {
@@ -89,7 +94,6 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // Auth Methods
-
     fun register(email: String, password: String, displayName: String) {
         viewModelScope.launch {
             _isLoading.value = true
@@ -155,7 +159,6 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // Exercise Methods
-
     fun updateSearchQuery(query: String) {
         _searchQuery.value = query
     }
@@ -189,7 +192,6 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // Workout Methods
-
     fun startNewWorkout(title: String? = null, onStarted: (Long) -> Unit) {
         viewModelScope.launch {
             _currentUserId.value?.let { userId ->
@@ -251,7 +253,6 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     // Routine Methods
-
     fun getRoutineExercises(routineId: Long): Flow<List<RoutineExercise>> {
         return repository.getRoutineExercises(routineId)
     }
@@ -290,5 +291,18 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
                 }
             }
         }
+    }
+
+    // Progress Photo Methods
+    fun saveProgressPhoto(filePath: String, note: String?) {
+        viewModelScope.launch {
+            _currentUserId.value?.let { userId ->
+                repository.saveProgressPhoto(userId, filePath, note)
+            }
+        }
+    }
+
+    fun deleteProgressPhoto(photo: ProgressPhoto) {
+        viewModelScope.launch { repository.deleteProgressPhoto(photo) }
     }
 }

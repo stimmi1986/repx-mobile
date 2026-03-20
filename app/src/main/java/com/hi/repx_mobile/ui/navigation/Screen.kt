@@ -24,6 +24,9 @@ sealed class Screen(val route: String) {
     object RoutineList : Screen("routines")
     object CreateRoutine : Screen("create_routine")
 
+    // Progress screens
+    object ProgressPhotos : Screen("progress_photos")
+
     // Settings
     object Profile : Screen("profile")
     object Settings : Screen("settings")

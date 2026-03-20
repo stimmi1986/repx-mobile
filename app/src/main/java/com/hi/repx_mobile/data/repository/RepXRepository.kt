@@ -4,12 +4,14 @@ import com.hi.repx_mobile.data.database.dao.*
 import com.hi.repx_mobile.data.database.entities.*
 import kotlinx.coroutines.flow.Flow
 import java.security.MessageDigest
+import java.io.File
 
 class RepXRepository(
     private val userDao: UserDao,
     private val exerciseDao: ExerciseDao,
     private val workoutDao: WorkoutDao,
     private val routineDao: RoutineDao,
+    private val progressPhotoDao: ProgressPhotoDao
 ) {
     // User Operations
 
@@ -276,5 +278,23 @@ class RepXRepository(
         }
 
         return workoutId
+    }
+
+    fun getAllProgressPhotos(userId: Long): Flow<List<ProgressPhoto>> =
+        progressPhotoDao.getAllPhotos(userId)
+
+    suspend fun saveProgressPhoto(userId: Long, filePath: String, note: String?): Long {
+        val photo = ProgressPhoto(userId = userId, filePath = filePath, note = note)
+        return progressPhotoDao.insertPhoto(photo)
+    }
+
+    suspend fun deleteProgressPhoto(photo: ProgressPhoto) {
+        val file = File(photo.filePath)
+        if (file.exists()) file.delete()
+        progressPhotoDao.deletePhoto(photo)
+    }
+
+    suspend fun updatePhotoNote(photo: ProgressPhoto, note: String?) {
+        progressPhotoDao.updatePhoto(photo.copy(note = note))
     }
 }
