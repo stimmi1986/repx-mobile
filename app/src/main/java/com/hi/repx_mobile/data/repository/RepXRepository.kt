@@ -11,7 +11,8 @@ class RepXRepository(
     private val exerciseDao: ExerciseDao,
     private val workoutDao: WorkoutDao,
     private val routineDao: RoutineDao,
-    private val progressPhotoDao: ProgressPhotoDao
+    private val progressPhotoDao: ProgressPhotoDao,
+    private val bodyWeightDao: BodyWeightDao
 ) {
     // User Operations
 
@@ -297,4 +298,17 @@ class RepXRepository(
     suspend fun updatePhotoNote(photo: ProgressPhoto, note: String?) {
         progressPhotoDao.updatePhoto(photo.copy(note = note))
     }
+
+    // Body Weight Operations
+
+    fun getAllBodyWeights(userId: Long): Flow<List<BodyWeight>> =
+        bodyWeightDao.getAllWeights(userId)
+
+    suspend fun logBodyWeight(userId: Long, weight: Float, note: String?): Long {
+        val entry = BodyWeight(userId = userId, weight = weight, note = note)
+        return bodyWeightDao.insert(entry)
+    }
+
+    suspend fun deleteBodyWeight(bodyWeight: BodyWeight) =
+        bodyWeightDao.delete(bodyWeight)
 }

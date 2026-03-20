@@ -27,6 +27,9 @@ sealed class Screen(val route: String) {
     // Progress screens
     object ProgressPhotos : Screen("progress_photos")
 
+    // Body Weight screens
+    object BodyWeight : Screen("body_weight")
+
     // Settings
     object Profile : Screen("profile")
     object Settings : Screen("settings")

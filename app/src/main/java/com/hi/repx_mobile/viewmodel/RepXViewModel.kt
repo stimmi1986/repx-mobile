@@ -17,7 +17,8 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
         exerciseDao = database.exerciseDao(),
         workoutDao = database.workoutDao(),
         routineDao = database.routineDao(),
-        progressPhotoDao = database.progressPhotoDao()
+        progressPhotoDao = database.progressPhotoDao(),
+        bodyWeightDao = database.bodyWeightDao()
     )
 
     // User State
@@ -304,5 +305,23 @@ class RepXViewModel(application: Application) : AndroidViewModel(application) {
 
     fun deleteProgressPhoto(photo: ProgressPhoto) {
         viewModelScope.launch { repository.deleteProgressPhoto(photo) }
+    }
+
+    // Body Weight State
+    val bodyWeights: StateFlow<List<BodyWeight>> = _currentUserId.flatMapLatest { userId ->
+        if (userId != null) repository.getAllBodyWeights(userId) else flowOf(emptyList())
+    }.stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
+
+    // Body Weight Methods
+    fun logBodyWeight(weight: Float, note: String?) {
+        viewModelScope.launch {
+            _currentUserId.value?.let { userId ->
+                repository.logBodyWeight(userId, weight, note)
+            }
+        }
+    }
+
+    fun deleteBodyWeight(bodyWeight: BodyWeight) {
+        viewModelScope.launch { repository.deleteBodyWeight(bodyWeight) }
     }
 }

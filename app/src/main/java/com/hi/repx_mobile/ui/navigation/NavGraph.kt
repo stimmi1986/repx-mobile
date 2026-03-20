@@ -20,6 +20,7 @@ import com.hi.repx_mobile.ui.screens.RegisterScreen
 import com.hi.repx_mobile.ui.screens.RoutineListScreen
 import com.hi.repx_mobile.ui.screens.WorkoutDetailScreen
 import com.hi.repx_mobile.ui.screens.WorkoutScreen
+import com.hi.repx_mobile.ui.screens.BodyWeightScreen
 
 import com.hi.repx_mobile.viewmodel.RepXViewModel
 
@@ -70,7 +71,8 @@ fun NavGraph(
                 onNavigateToHistory = { navController.navigate(Screen.WorkoutHistory.route) },
                 onNavigateToRoutines = { navController.navigate(Screen.RoutineList.route) },
                 onNavigateToPhotos = { navController.navigate(Screen.ProgressPhotos.route) },
-                onNavigateToProfile = { navController.navigate(Screen.Profile.route) }
+                onNavigateToProfile = { navController.navigate(Screen.Profile.route) },
+                onNavigateToBodyWeight = { navController.navigate(Screen.BodyWeight.route) }
             )
         }
 
@@ -110,6 +112,14 @@ fun NavGraph(
                         popUpTo(Screen.Home.route)
                     }
                 },
+                onBack = { navController.popBackStack() }
+            )
+        }
+
+        // Body Weight
+        composable(Screen.BodyWeight.route) {
+            BodyWeightScreen(
+                viewModel = viewModel,
                 onBack = { navController.popBackStack() }
             )
         }

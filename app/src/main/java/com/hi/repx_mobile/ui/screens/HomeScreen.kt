@@ -25,7 +25,8 @@ fun HomeScreen(
     onNavigateToHistory: () -> Unit,
     onNavigateToRoutines: () -> Unit,
     onNavigateToProfile: () -> Unit,
-    onNavigateToPhotos: () -> Unit
+    onNavigateToPhotos: () -> Unit,
+    onNavigateToBodyWeight: () -> Unit
 ) {
     val currentUser by viewModel.currentUser.collectAsState()
     val activeWorkout by viewModel.activeWorkout.collectAsState()
@@ -120,6 +121,22 @@ fun HomeScreen(
                         title = "Photos",
                         onClick = onNavigateToPhotos
                     )
+                }
+            }
+
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    QuickActionCard(
+                        modifier = Modifier.weight(1f),
+                        icon = Icons.Default.MonitorWeight,
+                        title = "Weight",
+                        subtitle = "Track",
+                        onClick = onNavigateToBodyWeight
+                    )
+                    Spacer(modifier = Modifier.weight(2f))
                 }
             }
 

@@ -20,9 +20,10 @@ import kotlinx.coroutines.launch
         Exercise::class,
         Routine::class,
         RoutineExercise::class,
-        ProgressPhoto::class
+        ProgressPhoto::class,
+        BodyWeight::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -31,6 +32,7 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun exerciseDao(): ExerciseDao
     abstract fun routineDao(): RoutineDao
     abstract fun progressPhotoDao(): ProgressPhotoDao
+    abstract fun bodyWeightDao(): BodyWeightDao
 
     companion object {
         @Volatile
