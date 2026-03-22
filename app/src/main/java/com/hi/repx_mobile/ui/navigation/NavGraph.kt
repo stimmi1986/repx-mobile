@@ -1,14 +1,8 @@
 package com.hi.repx_mobile.ui.navigation
 
 import WorkoutHistoryScreen
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.navigation.NavHostController
-import androidx.navigation.NavType
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.navArgument
+import androidx.compose.runtime.*
+import androidx.navigation.*
 
 import com.hi.repx_mobile.ui.screens.CreateRoutineScreen
 import com.hi.repx_mobile.ui.screens.ExerciseSearchScreen
