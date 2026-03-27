@@ -2,6 +2,7 @@ package com.hi.repx_mobile.data.repository
 
 import com.hi.repx_mobile.data.database.dao.*
 import com.hi.repx_mobile.data.database.entities.*
+import com.hi.repx_mobile.data.network.ApiClient
 import kotlinx.coroutines.flow.Flow
 import java.security.MessageDigest
 import java.io.File
@@ -18,15 +19,18 @@ class RepXRepository(
 
     suspend fun registerUser(email: String, password: String, displayName: String): Result<Long> {
         return try {
-            val existingUser = userDao.getUserByEmail(email)
-            if (existingUser != null) {
-                Result.failure(Exception("Email already registered"))
-            } else {
-                val passwordHash = hashPassword(password)
-                val user = User(email = email, passwordHash = passwordHash, displayName = displayName)
-                val userId = userDao.insert(user)
-                Result.success(userId)
-            }
+            val response = ApiClient.authService.register(
+                com.hi.repx_mobile.data.network.RegisterRequest(email, password, displayName)
+            )
+            ApiClient.saveToken(response.token)
+            val user = User(
+                id = response.user.id,
+                email = response.user.email,
+                displayName = response.user.displayName,
+                passwordHash = ""
+            )
+            userDao.insert(user)
+            Result.success(response.user.id)
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -34,14 +38,18 @@ class RepXRepository(
 
     suspend fun loginUser(email: String, password: String): Result<User> {
         return try {
-            val user = userDao.getUserByEmail(email)
-            if (user == null) {
-                Result.failure(Exception("User not found"))
-            } else if (user.passwordHash != hashPassword(password)) {
-                Result.failure(Exception("Invalid password"))
-            } else {
-                Result.success(user)
-            }
+            val response = ApiClient.authService.login(
+                com.hi.repx_mobile.data.network.LoginRequest(email, password)
+            )
+            ApiClient.saveToken(response.token)
+            val user = User(
+                id = response.user.id,
+                email = response.user.email,
+                displayName = response.user.displayName,
+                passwordHash = ""
+            )
+            userDao.insert(user)
+            Result.success(user)
         } catch (e: Exception) {
             Result.failure(e)
         }

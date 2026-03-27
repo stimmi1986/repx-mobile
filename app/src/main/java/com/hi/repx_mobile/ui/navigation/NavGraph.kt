@@ -10,7 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 
-import com.hi.repx_mobile.ui.screens.CreateRoutineScreen
+import com.hi.repx_mobile.ui.screens.*
 import com.hi.repx_mobile.ui.screens.ExerciseSearchScreen
 import com.hi.repx_mobile.ui.screens.HomeScreen
 import com.hi.repx_mobile.ui.screens.LoginScreen
