@@ -35,7 +35,7 @@ val WorkoutOrange = Color(0xFFFF9800)
 val WorkoutRed = Color(0xFFF44336)
 
 // Muscle group colors
-val ChestColor = Color(0xFFE53935)
+val ChestColor = Color(0xFFE53936)
 val BackColor = Color(0xFF1E88E5)
 val ShouldersColor = Color(0xFFFF9800)
 val BicepsColor = Color(0xFF8E24AA)
